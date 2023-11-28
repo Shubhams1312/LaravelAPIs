@@ -18,8 +18,10 @@ class UserController extends Controller
         Auth::attempt($input);
         $user = Auth::user();
 
-        $token = $user->createToken('user')->accessToken;
-       return response()->json([
+        $token = $user->createToken('user')->accessToken; //o auth
+
+        return response()->json([
+            'message'=>"You login",
         'status'=> 200,
         'token'=>$token
        ],200);
@@ -30,15 +32,24 @@ class UserController extends Controller
      */
     public function getUserDetails(Request $request)
     {
-        //
-    }
+        
+        if(Auth::guard('api')->check()){
+            $user = Auth::guard('api')->user();
+         return response(['data'=> $user]);
+           } 
+            return response(['data' =>'Not found']);
+            
+   }
 
     /**
      * Display the specified resource.
      */
-    public function userLogout(User $user)
+    public function userLogout(Request $request)
     {
-        //
+        $usertoken = Auth::guard('api')->user()->token(); 
+    $usertoken->revoke();
+    $response = ['message' => 'You have been successfully logged out!'];
+    return response($response, 200);
     }
 
     /**
