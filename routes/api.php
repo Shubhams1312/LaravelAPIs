@@ -21,6 +21,8 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::controller(UserController::class)->group(function(){
     Route::post('login','loginUser');
+    Route::post('register','registerUser');
+
 });
 
 Route::controller(UserController::class)->group(function(){
@@ -28,3 +30,4 @@ Route::controller(UserController::class)->group(function(){
     Route::get('user','getUserDetails');
     Route::get('logout','userLogout');
 })->middleware('auth:api');
+

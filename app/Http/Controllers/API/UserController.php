@@ -5,12 +5,60 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth; 
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
+
 class UserController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
+
+     public function registerUser(Request $request)
+     {
+        
+        try {
+            $validator = Validator::make($request->all(),[
+                'name' =>'required|string',
+                'email' => 'required|string',
+                'password' => 'required'
+            ]);
+
+            if($validator->fails()){
+                return response()->json([
+                    'success' => false,
+                    'error' =>$validator->errors()
+                ], 200);
+            }
+            
+            // $input = $request->password;
+            // $password = bcrypt($input); 
+            $user = new User;
+            $user->name = $request->name;
+            $user->email = $request->email;
+            $user->password =  Hash::make($request->password);
+            $user->save();
+
+            return response()->json([
+                'status' => 200,
+                "user created successfully"
+            ]);
+
+
+        } catch (\Throwable $th) {
+            Log::error($th);
+            return response()->json([
+                'status' => "error",
+                'message' => 'Something went wrong'
+            ]);
+        }
+     }
+
+
+
+
     public function loginUser(Request $request)
     {
         $input = $request->all();
