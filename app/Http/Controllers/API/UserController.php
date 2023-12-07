@@ -9,7 +9,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
-
+use Illuminate\Support\Facades\Password;
+use Mail;
 class UserController extends Controller
 {
     /**
@@ -103,5 +104,37 @@ class UserController extends Controller
     /**
      * Update the specified resource in storage.
      */
+    public function forgotPassword(Request $request){ 
+        $input = $request->only('email');
+        $validator = Validator::make($input, [
+            'email' => "required|email"
+        ]);
+       
+        if ($validator->fails()) {
+            return response()->json($validator->errors());
+        } 
+        $response = Password::sendResetLink($input);
+      // dd($response);
+        $message = $response == Password::RESET_LINK_SENT ? 'Mail send successfully' : GLOBAL_SOMETHING_WANTS_TO_WRONG; 
+        return response()->json($message);
+    }
+
+    public function passwordReset(Request $request){
+    $input = $request->only('email','token', 'password', 'password_confirmation');
+    $validator = Validator::make($input, [
+        'token' => 'required',
+        'email' => 'required|email',
+        'password' => 'required|confirmed|min:8',
+    ]);
+    if ($validator->fails()) {
+        return response()->json($validator->errors());
+    }
+    $response = Password::reset($input, function ($user, $password) {
+        $user->password = Hash::make($password);
+        $user->save();
+    });
+    $message = $response == Password::PASSWORD_RESET ? 'Password reset successfully' : GLOBAL_SOMETHING_WANTS_TO_WRONG;
+    return response()->json($message);
+}
    
 }
